@@ -134,7 +134,7 @@ Select *, (RollingPeopleVaccinated/Population)*100
 From #PercentPopulationVaccinated
 
 
---Creating View to store data for visualizations
+------------Creating Views to store data for visualizations-----------
 
 Create View PercentPopulationVaccinated as
 
@@ -147,3 +147,47 @@ Join PortfolioProject..CovidVaccinations vac
 	and dea.date = vac.date
 Where dea.continent is not null
 --order by 2,3
+
+
+-------Likelihood of fatality in U.S. and U.S. Virgin Islands
+USE PortfolioProject
+GO
+Create View FatalityLikelihood as
+
+Select Location, date, total_cases, total_deaths, (Convert(float, total_deaths)/ Nullif(convert(float, total_cases),0))*100 as DeathPercentage
+From PortfolioProject..CovidDeaths
+--Where location like '%states%'
+--order by 1,2
+
+--Continents with the highest fatality count per population
+USE PortfolioProject
+GO
+Create View ContinentWithHighestFatality as
+
+Select continent, MAX(Cast(total_deaths as int)) as TotalDeathCount
+From PortfolioProject..CovidDeaths
+--Where location like '%states%'
+Where continent is not null
+Group by continent
+--order by TotalDeathCount Desc
+
+--Countries with highest fatality count per population
+USE PortfolioProject
+GO
+Create View CountriesHighestFatality as
+Select location, MAX(Cast(total_deaths as int)) as TotalDeathCount
+From PortfolioProject..CovidDeaths
+--Where location like '%states%'
+Where continent is not null
+Group by location
+--order by TotalDeathCount Desc
+
+--Countries with highest infection rate vs Population
+USE PortfolioProject
+GO
+Create View CountriesInfectionRate as
+Select Location, Population, MAX(total_cases) as HighestInfectionCount, MAX(Convert(float, total_cases)/ Nullif(convert(float, population),0))*100 as PercentPopulationInfected
+From PortfolioProject..CovidDeaths
+--Where location like '%states%'
+Group by Location, Population
+--order by PercentPopulationInfected Desc
